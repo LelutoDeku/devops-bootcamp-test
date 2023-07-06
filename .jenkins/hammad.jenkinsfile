@@ -1,3 +1,4 @@
+
 def BuildTagAndPush(service) {
 
   def directory = "object-detection/${service}"
@@ -146,6 +147,9 @@ pipeline {
     SHARED_DATA_PATH = "/mnt/shared-data"
     AWS_ECR_TOKEN_FILE = "aws-ecr-token"
 
+    GITHUB_ACCOUNT = "tsadoklf"
+    GITHUB_REPO_URL = "https://github.com/${GITHUB_ACCOUNT}/devops-bootcamp-test.git"
+
     // IMAGE_TAG="tsadok-${BUILD_NUMBER}"
     IMAGE_TAG = "hammad"
   }
@@ -156,7 +160,7 @@ pipeline {
         container('maven') {
           git branch: 'main', changelog: false, poll: false, 
             credentialsId: 'jenkins',
-            url: 'https://github.com/tsadoklf/devops-bootcamp-test.git'
+            url: "${GITHUB_REPO_URL}"
         }
       }
     }  
@@ -358,86 +362,3 @@ pipeline {
     }
   }
 } 
-
-// pipeline    {
-//     // agent any 
-//     agent {
-//         kubernetes {
-//             yaml '''
-//                 apiVersion: v1
-//                 kind: Pod
-//                 spec:
-//                   containers:
-        
-//                   - name: terraform
-//                     image: hashicorp/terraform:latest
-//                     command: 
-//                     - sh
-//                     tty: true
-        
-//                   - name: maven
-//                     image: maven:alpine
-//                     command:
-//                     - cat
-//                     tty: true
-                    
-//                   - name: aws
-//                     image: amazon/aws-cli
-//                     command:
-//                     - sh
-//                     tty: true
-//                     volumeMounts:     
-//                       - name: shared-data
-//                         mountPath: /mnt/shared-data
-                    
-//                   - name: dind  
-//                     image: docker:dind
-//                     imagePullPolicy: Always
-//                     ports:     
-//                       - containerPort: 2375
-//                         protocol: TCP
-//                     env:     
-//                       - name: DOCKER_TLS_CERTDIR
-//                         value: ""
-//                     resources:
-//                       requests:
-//                         cpu: 500m
-//                         memory: 512Mi
-//                       limits:
-//                         cpu: 2000m
-//                         memory: 2Gi
-//                     tty: true
-//                     volumeMounts:     
-//                       - name: dind-storage
-//                         mountPath: /var/lib/docker
-//                       - name: shared-data
-//                         mountPath: /mnt/shared-data
-//                     securityContext:   
-//                       privileged: true          
-                  
-//                   volumes:  
-//                   - name: dind-storage      
-//                     emptyDir: {}
-//                   - name: shared-data
-//                     emptyDir: {}            
-                      
-//                 '''
-//             }
-//         }
-        
-       
-//     stages {
-//         stage('File Creation') {
-//             steps {
-//                 container("maven") {
-//                     sh '''
-//                         echo "File creating"
-//                         mkdir test
-//                         cd test
-//                         touch test.sh
-//                     '''
-//                 }
-//             }
-//         }
-//     }
-// }

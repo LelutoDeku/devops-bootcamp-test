@@ -1,13 +1,75 @@
-pipeline    {
-    agent any
-    stages  {
-        stage("Hello World")    {
-            steps   {
-                sh '''
-                    echo "Hello my name is Hammad"
-                '''
-            }
+pipeline {
+    agent {
+        kubernetes {
+            yaml '''
+                apiVersion: v1
+                kind: Pod
+                spec:
+                  containers:
+                  - name: terraform
+                    image: hashicorp/terraform:latest
+                    command:
+                    - sh
+                    tty: true
+
+                  - name: maven
+                    image: maven
+                    command:
+                    - cat
+                    tty: true
+
+                  - name: aws
+                    image: amazon/aws-cli
+                    command:
+                    - sh
+                    tty: true
+                    volumeMounts:
+                      - name: shared-data
+                        mountPath: /mnt/shared-data
+
+                  - name: dind
+                    image: docker:dind
+                    imagePullPolicy: Always
+                    ports:
+                      - containerPort: 8080
+                        protocol: TCP
+                    env:
+                      - name: DOCKER_TLS_CERTDIR
+                        value: " "
+                    resources:
+                      requests:
+                        cpu: 20000m
+                        memory: 16Gi
+                    tty: true
+                    volumeMounts:
+                      - name: dind-storage
+                        mountPath: /var/lib/docker
+                      - name: shared-data
+                        mountPath: /mnt/shared-data
+                    securityContext:
+                      privileged: true
+
+                  volumes:
+                  - name: dind-storage
+                    emptyDir: {}
+                  - name: shared-data
+                    emptyDir: {}
+            '''
         }
     }
 
+    stages {
+        stage('File Creation') {
+            steps {
+                container("maven") {
+                    sh '''
+                        echo "File creating"
+                        mkdir test
+                        cd test
+                        touch test.sh
+                    '''
+                }
+            }
+        }
+    }
 }

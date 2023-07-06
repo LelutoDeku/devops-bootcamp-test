@@ -358,86 +358,86 @@ pipeline {
     }
   }
 } 
-=======
-pipeline    {
-    // agent any 
-    agent {
-        kubernetes {
-            yaml '''
-                apiVersion: v1
-                kind: Pod
-                spec:
-                  containers:
+
+// pipeline    {
+//     // agent any 
+//     agent {
+//         kubernetes {
+//             yaml '''
+//                 apiVersion: v1
+//                 kind: Pod
+//                 spec:
+//                   containers:
         
-                  - name: terraform
-                    image: hashicorp/terraform:latest
-                    command: 
-                    - sh
-                    tty: true
+//                   - name: terraform
+//                     image: hashicorp/terraform:latest
+//                     command: 
+//                     - sh
+//                     tty: true
         
-                  - name: maven
-                    image: maven:alpine
-                    command:
-                    - cat
-                    tty: true
+//                   - name: maven
+//                     image: maven:alpine
+//                     command:
+//                     - cat
+//                     tty: true
                     
-                  - name: aws
-                    image: amazon/aws-cli
-                    command:
-                    - sh
-                    tty: true
-                    volumeMounts:     
-                      - name: shared-data
-                        mountPath: /mnt/shared-data
+//                   - name: aws
+//                     image: amazon/aws-cli
+//                     command:
+//                     - sh
+//                     tty: true
+//                     volumeMounts:     
+//                       - name: shared-data
+//                         mountPath: /mnt/shared-data
                     
-                  - name: dind  
-                    image: docker:dind
-                    imagePullPolicy: Always
-                    ports:     
-                      - containerPort: 2375
-                        protocol: TCP
-                    env:     
-                      - name: DOCKER_TLS_CERTDIR
-                        value: ""
-                    resources:
-                      requests:
-                        cpu: 500m
-                        memory: 512Mi
-                      limits:
-                        cpu: 2000m
-                        memory: 2Gi
-                    tty: true
-                    volumeMounts:     
-                      - name: dind-storage
-                        mountPath: /var/lib/docker
-                      - name: shared-data
-                        mountPath: /mnt/shared-data
-                    securityContext:   
-                      privileged: true          
+//                   - name: dind  
+//                     image: docker:dind
+//                     imagePullPolicy: Always
+//                     ports:     
+//                       - containerPort: 2375
+//                         protocol: TCP
+//                     env:     
+//                       - name: DOCKER_TLS_CERTDIR
+//                         value: ""
+//                     resources:
+//                       requests:
+//                         cpu: 500m
+//                         memory: 512Mi
+//                       limits:
+//                         cpu: 2000m
+//                         memory: 2Gi
+//                     tty: true
+//                     volumeMounts:     
+//                       - name: dind-storage
+//                         mountPath: /var/lib/docker
+//                       - name: shared-data
+//                         mountPath: /mnt/shared-data
+//                     securityContext:   
+//                       privileged: true          
                   
-                  volumes:  
-                  - name: dind-storage      
-                    emptyDir: {}
-                  - name: shared-data
-                    emptyDir: {}            
+//                   volumes:  
+//                   - name: dind-storage      
+//                     emptyDir: {}
+//                   - name: shared-data
+//                     emptyDir: {}            
                       
-                '''
-            }
-        }
+//                 '''
+//             }
+//         }
         
        
-    stages {
-        stage('File Creation') {
-            steps {
-                container("maven") {
-                    sh '''
-                        echo "File creating"
-                        mkdir test
-                        cd test
-                        touch test.sh
-                    '''
-                }
-            }
-        }
-    }
-}
+//     stages {
+//         stage('File Creation') {
+//             steps {
+//                 container("maven") {
+//                     sh '''
+//                         echo "File creating"
+//                         mkdir test
+//                         cd test
+//                         touch test.sh
+//                     '''
+//                 }
+//             }
+//         }
+//     }
+// }

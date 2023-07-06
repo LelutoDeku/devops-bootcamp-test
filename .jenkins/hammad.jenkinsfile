@@ -35,7 +35,7 @@ pipeline {
                         protocol: TCP
                     env:
                       - name: DOCKER_TLS_CERTDIR
-                        value: " "
+                        value: ""
                     resources:
                       requests:
                         cpu: 20000m

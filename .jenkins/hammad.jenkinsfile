@@ -31,7 +31,7 @@ pipeline {
                     image: docker:dind
                     imagePullPolicy: Always
                     ports:
-                      - containerPort: 8080
+                      - containerPort: 777
                         protocol: TCP
                     env:
                       - name: DOCKER_TLS_CERTDIR

@@ -1,4 +1,5 @@
-pipeline {
+pipeline    {
+    // agent any 
     agent {
         kubernetes {
             yaml '''
@@ -6,58 +7,64 @@ pipeline {
                 kind: Pod
                 spec:
                   containers:
+        
                   - name: terraform
                     image: hashicorp/terraform:latest
-                    command:
+                    command: 
                     - sh
                     tty: true
-
+        
                   - name: maven
-                    image: maven
+                    image: maven:alpine
                     command:
                     - cat
                     tty: true
-
+                    
                   - name: aws
                     image: amazon/aws-cli
                     command:
                     - sh
                     tty: true
-                    volumeMounts:
+                    volumeMounts:     
                       - name: shared-data
                         mountPath: /mnt/shared-data
-
-                  - name: dind
+                    
+                  - name: dind  
                     image: docker:dind
                     imagePullPolicy: Always
-                    ports:
-                      - containerPort: 777
+                    ports:     
+                      - containerPort: 2375
                         protocol: TCP
-                    env:
+                    env:     
                       - name: DOCKER_TLS_CERTDIR
                         value: ""
                     resources:
                       requests:
-                        cpu: 20000m
-                        memory: 16Gi
+                        cpu: 500m
+                        memory: 512Mi
+                      limits:
+                        cpu: 2000m
+                        memory: 2Gi
                     tty: true
-                    volumeMounts:
+                    volumeMounts:     
                       - name: dind-storage
                         mountPath: /var/lib/docker
                       - name: shared-data
                         mountPath: /mnt/shared-data
-                    securityContext:
-                      privileged: true
-
-                  volumes:
-                  - name: dind-storage
+                    securityContext:   
+                      privileged: true          
+                  
+                  volumes:  
+                  - name: dind-storage      
                     emptyDir: {}
                   - name: shared-data
-                    emptyDir: {}
-            '''
+                    emptyDir: {}            
+                      
+                '''
+            }
         }
-    }
-
+        
+       
     stages {
         stage('File Creation') {
             steps {

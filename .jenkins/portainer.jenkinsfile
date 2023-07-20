@@ -169,8 +169,6 @@ pipeline {
       }
     }
 
-  
-
     stage('EKS: Get Load Balancer Hostname') {
       steps {
         container('aws') {
@@ -184,78 +182,6 @@ pipeline {
             export HOST_NAME=$(kubectl get service -n $NAMESPACE $SERVICE_NAME -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
             echo "HOST_NAME: $HOST_NAME"
 
-          '''
-        }
-      }
-    }
-
-    stage('EKS: Deploy Hello-World using kubectl tool') {
-      when {      
-          expression {
-              return env.JOB_NAME == 'tutim-ai-hello-world';
-          }
-      }
-      steps {
-        container('aws') {
-          sh '''
-            export KUBECONFIG="$SHARED_DATA_PATH/kubeconfig"
-
-            kubectl get ns --kubeconfig $KUBECONFIG
-
-            K8S_DIR=".k8s/hello-world"
-
-            kubectl apply -f $K8S_DIR/0-namespace.yaml  --kubeconfig $KUBECONFIG
-
-            NAMESPACE="app"
-
-            kubectl apply -f $K8S_DIR/1-service.yaml    -n $NAMESPACE --kubeconfig $KUBECONFIG
-            kubectl apply -f $K8S_DIR/2-deployment.yaml -n $NAMESPACE --kubeconfig $KUBECONFIG
-            kubectl apply -f $K8S_DIR/3-hpa.yaml        -n $NAMESPACE --kubeconfig $KUBECONFIG
-            kubectl apply -f $K8S_DIR/4-ingress.yaml    -n $NAMESPACE --kubeconfig $KUBECONFIG
-
-            kubectl get all -n $NAMESPACE --kubeconfig $KUBECONFIG
-            
-          '''
-        }
-      }
-    }
-
-    stage('EKS: Deploy Hello-World using Helm') {
-      when {      
-          expression {
-              return env.JOB_NAME == 'tutim-ai-hello-world';
-          }
-      }
-      steps {
-        container('aws') {
-          sh '''
-            export KUBECONFIG="$SHARED_DATA_PATH/kubeconfig"
-
-            NAMESPACE="hello-world"
-
-            echo ""
-            echo "Using Helm to install Hello-World to namespace '$NAMESPACE'"
-            echo "-----------------------------------------------------------"
-
-            RELEASE_NAME="hello-world"
-            CHART_NAME="hello-world"
-            CHART_REPO="./helm/hello-world"
-            VALUES_FILE="k8s-install-jenkins-helm-values.yaml"
-
-            echo ""
-            echo "Installing '$CHART_NAME' in namespace '$NAMESPACE' using helm"
-            echo "-----------------------------------------------------------"
-            helm upgrade $CHART_NAME $CHART_REPO \
-                --install \
-                --create-namespace \
-                --namespace $NAMESPACE \
-                --kubeconfig $KUBECONFIG \
-                --set ingress.hosts[0].paths[0].path=/helm-hello-world \
-                --set ingress.hosts[0].paths[0].pathType=Prefix \
-                --set ingress.hosts[0].host=$HOST_NAME \
-                --set deployment.replicas=3 
-            
-            kubectl get all -n $NAMESPACE --kubeconfig $KUBECONFIG
           '''
         }
       }
@@ -415,8 +341,8 @@ pipeline {
       }
       steps {
         script {
-        //   def services = ["frontend", "polybot", "yolo5", "chatgpt-telegram-bot", "tumblr"] 
-          def services = ["chatgpt-telegram-bot"] 
+          def services = ["frontend", "polybot", "yolo5", "chatgpt-telegram-bot", "tumblr"] 
+          // def services = ["chatgpt-telegram-bot"] 
           for (int i = 0; i < services.size(); i++) {
             stage("Build ${services[i]}") {
               container('dind') {
@@ -526,14 +452,14 @@ pipeline {
                     //   unzip awscliv2.zip && \
                     //   sudo ./aws/install
     stage ("SSH: Deploy Code to EC2 Inatance"){
-      when {      
-          expression {
-              return env.JOB_NAME == 'tutim-ai-dev';
-          }
-      }
+      // when {      
+      //     expression {
+      //         return env.JOB_NAME == 'tutim-ai-dev';
+      //     }
+      // }
       steps{
         container('terraform') {
-          withCredentials([sshUserPrivateKey(credentialsId: "aws-ec2-keypair", keyFileVariable: 'CREDENTIALS_FILE')]) {
+          withCredentials([ sshUserPrivateKey(credentialsId: "aws-ec2-keypair", keyFileVariable: 'CREDENTIALS_FILE')]) {
                 sh '''
 
                     EC2_INSTANCE_PUBLIC_IP=$(cat $SHARED_DATA_PATH/$EC2_INSTANCES_PUBLIC_IP_ADDRESSES)  
